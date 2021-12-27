@@ -1,0 +1,502 @@
+####start  sh 01_make.sh     "00:40:13" ####
+Sending build context to Docker daemon 35.12 GB
+Step 1/18 : FROM docker.repository.cloudera.com/cdsw/engine:13
+ ---> 460271133133
+Step 2/18 : ARG OS_RELEASE="ubuntu1804"
+ ---> Using cache
+ ---> de3b177015ee
+Step 3/18 : RUN rm -f /etc/apt/sources.list.d/cloudera.list &&     rm -f /etc/apt/sources.list.d/yarn.list &&     apt-get update && apt-get install -y --no-install-recommends     gnupg2 curl ca-certificates &&     curl -fsSL https://developer.download.nvidia.com/compute/cuda/repos/${OS_RELEASE}/x86_64/7fa2af80.pub | apt-key add - &&     echo "deb https://developer.download.nvidia.com/compute/cuda/repos/${OS_RELEASE}/x86_64 /" > /etc/apt/sources.list.d/cuda.list &&     echo "deb https://developer.download.nvidia.com/compute/machine-learning/repos/${OS_RELEASE}/x86_64 /" > /etc/apt/sources.list.d/nvidia-ml.list &&     apt-get purge --autoremove -y curl &&     rm -rf /var/lib/apt/lists/*
+ ---> Using cache
+ ---> 7e45bbc3ca33
+Step 4/18 : ENV CUDA_VERSION 11.1.1
+ ---> Using cache
+ ---> 89d76f900040
+Step 5/18 : LABEL com.nvidia.cuda.version "${CUDA_VERSION}"
+ ---> Using cache
+ ---> 2c339dbf7c1f
+Step 6/18 : ENV CUDA_PKG_VERSION 11.1=11.1.74-1
+ ---> Using cache
+ ---> b14cd1f75bb1
+Step 7/18 : RUN rm -f /etc/apt/sources.list.d/cloudera.list &&     rm -f /etc/apt/sources.list.d/yarn.list &&     apt-get update &&      apt-get install -y --no-install-recommends cuda-cudart-11-1=11.1.74-1     cuda-compat-11.1 &&     ln -s cuda-11.1 /usr/local/cuda &&     rm -rf /var/lib/apt/lists/*
+ ---> Using cache
+ ---> 793a71557c09
+Step 8/18 : RUN echo "/usr/local/cuda/lib64" >> /etc/ld.so.conf.d/cuda.conf &&     ldconfig
+ ---> Using cache
+ ---> 71c66f5d6b3a
+Step 9/18 : ENV NVIDIA_VISIBLE_DEVICES all
+ ---> Using cache
+ ---> a753244fba65
+Step 10/18 : ENV NVIDIA_DRIVER_CAPABILITIES compute,utility
+ ---> Using cache
+ ---> 5987e946f96a
+Step 11/18 : ENV NVIDIA_REQUIRE_CUDA "cuda>=11.1 brand=tesla,driver>=418,driver<419 brand=tesla,driver>=440,driver<441 driver>=450,driver<451"
+ ---> Using cache
+ ---> 6b1b8afefa4f
+Step 12/18 : ENV NCCL_VERSION 2.8.3
+ ---> Using cache
+ ---> 10b989affc70
+Step 13/18 : RUN apt-get update && apt-get install -y --no-install-recommends     cuda-cudart-dev-11-1=11.1.74-1     cuda-command-line-tools-11-1=11.1.1-1     cuda-minimal-build-11-1=11.1.1-1     cuda-libraries-dev-11-1=11.1.1-1     cuda-nvml-dev-11-1=11.1.74-1     libnpp-dev-11-1=11.1.2.301-1     libnccl-dev=2.8.3-1+cuda11.1     libcublas-dev-11-1=11.3.0.106-1     libcusparse-11-1=11.3.0.10-1     libcusparse-dev-11-1=11.3.0.10-1     libnpp-11-1=11.1.2.301-1     cuda-nvtx-11-1=11.1.74-1     libcublas-11-1=11.3.0.106-1     libnccl2=$NCCL_VERSION-1+cuda11.1     && rm -rf /var/lib/apt/lists/*
+ ---> Using cache
+ ---> b5db8003e5eb
+Step 14/18 : RUN apt-mark hold libcublas-dev-11.1 libnccl-dev libcublas-11-1 libnccl2
+ ---> Using cache
+ ---> 23b1d0d6a98f
+Step 15/18 : ENV LIBRARY_PATH /usr/local/cuda/lib64/stubs
+ ---> Using cache
+ ---> 342c4f4f49a2
+Step 16/18 : ENV CUDNN_VERSION 8.0.5.39
+ ---> Using cache
+ ---> e6c72ea7a7a7
+Step 17/18 : LABEL com.nvidia.cudnn.version "${CUDNN_VERSION}"
+ ---> Using cache
+ ---> 694a07901e8f
+Step 18/18 : RUN apt-get update && apt-get install -y --no-install-recommends             libcudnn8=$CUDNN_VERSION-1+cuda11.1             libcudnn8-dev=$CUDNN_VERSION-1+cuda11.1 &&     apt-mark hold libcudnn8 &&     rm -rf /var/lib/apt/lists/*
+ ---> Using cache
+ ---> 2505de5b9a2c
+Successfully built 2505de5b9a2c
+####end  sh 01_make.sh     "00:59:59" ####
+####start  sh 02_make.sh     "00:59:59" ####
+Sending build context to Docker daemon 35.12 GB
+Step 1/13 : FROM cuda11.docker.repository.cloudera.com/cdsw/engine:13
+ ---> 2505de5b9a2c
+Step 2/13 : RUN rm -f /etc/apt/sources.list.d/cloudera.list &&     rm -f /etc/apt/sources.list.d/yarn.list &&     cd /tmp/ &&     apt-get update &&      apt-get install -y --no-install-recommends              language-pack-ko  fonts-nanum              libssl-dev             libmariadb-client-lgpl-dev             mysql-client libmysqlclient20             libxml2-dev  libnlopt-dev              unixodbc-dev iodbc libiodbc2              xorg libx11-dev  libglu1-mesa-dev  libfreetype6-dev               libgmp-dev   libblas-dev libblas3             libstdc++6  libcupti-dev openjdk-8-jdk 	&&     wget -O impala.deb --no-check-certificate https://downloads.cloudera.com/connectors/impala_odbc_2.5.41.1029/Debian/clouderaimpalaodbc_2.5.41.1029-2_amd64.deb &&     wget -O hive.deb --no-check-certificate  https://downloads.cloudera.com/connectors/ClouderaHive_ODBC_2.6.4.1004/Debian/clouderahiveodbc_2.6.4.1004-2_amd64.deb &&     dpkg -i  impala.deb hive.deb  &&     rm -rf  *.deb && rm -rf /var/lib/apt/lists/*  &&     mv /etc/default/locale /etc/default/locale.bak  &&     echo "LANG=\"ko_KR.UTF-8\"" >> /etc/default/locale &&     echo "LANGUAGE=\"ko_KR:ko\"" >> /etc/default/locale  &&     ln -sf /usr/share/zoneinfo/Asia/Seoul /etc/localtime &&     rm -rf /var/lib/apt/lists/*
+ ---> Using cache
+ ---> 67325f56ad6f
+Step 3/13 : RUN cd /tmp/ &&     wget http://10.200.101.253/hanwha/oracle/oracle-instantclient12.1-basic-12.1.0.2.0-1.x86_64.rpm  &&     wget http://10.200.101.253/hanwha/oracle/oracle-instantclient12.1-devel-12.1.0.2.0-1.x86_64.rpm  &&     apt-get update &&  apt-get install -y alien libaio1  &&     alien -i oracle-instantclient12.1-basic*.rpm &&     alien -i oracle-instantclient12.1-devel*.rpm  &&     export ORACLE_HOME=/usr/lib/oracle/12.1/client64 &&     mkdir $ORACLE_HOME/rdbms  &&     mkdir $ORACLE_HOME/rdbms/public &&     cp /usr/include/oracle/12.1/client64/* $ORACLE_HOME/rdbms/public &&     rm -f *.rpm
+ ---> Using cache
+ ---> 9dbd8a3c4bae
+Step 4/13 : RUN mkdir -p /opt/conda/envs/python3.6  &&     conda install -y nbconvert python=3.6.10 -n python3.6 &&     conda install -y -n python3.6 bokeh  &&     conda install -y -n python3.6 gensim  &&     conda install -y -n python3.6 glob2  &&     conda install -y -n python3.6 h5py  &&     conda install -y -n python3.6 joblib  &&     conda install -y -n python3.6 mpi4py  &&     conda install -y -n python3.6 multiprocess  &&     conda install -y -n python3.6 nltk  &&     conda install -y -n python3.6 pandas  &&     conda install -y -n python3.6 pymysql  &&     conda install -y -n python3.6 pyodbc  &&     conda install -y -n python3.6 scipy  &&     conda install -y -n python3.6 statsmodels  &&     conda install -y -n python3.6 statsd  &&     conda install -y -n python3.6 tqdm  &&     conda install -y -n python3.6 seaborn  &&     conda install -y -n python3.6 matplotlib  &&     conda install -y -n python3.6 scikit-learn  &&     conda install -y -n python3.6 numba  && 	conda install -y -n python3.6 numpy  && 	conda install -y -n python3.6 lightfm && 	conda clean -a
+ ---> Using cache
+ ---> b90dd1066e0b
+Step 5/13 : RUN /opt/conda/envs/python3.6/bin/pip install --no-cache-dir --no-clean -v netifaces                  gputil gym  jupyterlab konlpy JPype1-py3  mglearn boruta lightgbm &&     pip3 install --no-cache-dir --no-clean -v netifaces 	     jupyterlab
+ ---> Using cache
+ ---> a7bfe50b12be
+Step 6/13 : ADD jvm.py /opt/conda/envs/python3.6/lib/python3.6/site-packages/konlpy/jvm.py
+ ---> Using cache
+ ---> 47e6abc847d3
+Step 7/13 : RUN cd /tmp/ &&     wget --no-check-certificate  https://jaist.dl.sourceforge.net/project/libpng/zlib/1.2.9/zlib-1.2.9.tar.gz  &&     tar -xvf zlib-1.2.9.tar.gz &&     cd zlib-1.2.9   &&     ./configure &&  make && make install &&     cd /usr/lib/x86_64-linux-gnu/  &&     ln -s -f /usr/local/lib/libz.so.1.2.9/lib libz.so.1 &&     cd /tmp/ && rm -rf zlib-1.2.9
+ ---> Using cache
+ ---> f390adf31221
+Step 8/13 : RUN cd /tmp && wget http://ftp.gnu.org/gnu/m4/m4-1.4.18.tar.gz &&     tar xvfz m4-1.4.18.tar.gz &&     cd m4-1.4.18 &&     ./configure --prefix=/usr && make && make install &&     cd /tmp  && rm -rf m4-1.4.18 &&     wget http://ftp.gnu.org/gnu/autoconf/autoconf-2.69.tar.gz  &&      tar xvfz autoconf-2.69.tar.gz  &&      cd autoconf-2.69 && ./configure &&  make &&  make install  &&      cd /tmp &&  rm -rf  autoconf-2.69  &&      wget  http://ftpmirror.gnu.org/automake/automake-1.11.tar.gz  &&      tar -zxvf automake-1.11.tar.gz  &&      cd automake-1.11  &&      ./configure  &&  make  &&  make install  &&      cd /tmp &&  rm -rf automake-1.11  && rm -f *.tar.gz &&      echo "## install mecab-ko, mecab-ko-dic, mecab-python ##" &&      cd /tmp  &&     wget  https://bitbucket.org/eunjeon/mecab-ko/downloads/mecab-0.996-ko-0.9.2.tar.gz  &&     tar zxfv mecab-0.996-ko-0.9.2.tar.gz  &&     cd mecab-0.996-ko-0.9.2  &&     ./configure  && make  && make check  && make install  && ldconfig &&     cd /tmp &&  rm -rf mecab-0.996-ko-0.9.2 && rm -f *.tar.gz  &&     wget  https://bitbucket.org/eunjeon/mecab-ko-dic/downloads/mecab-ko-dic-2.1.1-20180720.tar.gz  &&     tar -zxvf mecab-ko-dic-2.1.1-20180720.tar.gz  &&     cd mecab-ko-dic-2.1.1-20180720 &&     ./configure && make  && make install  && ldconfig  &&     sh -c 'echo "dicdir=/usr/local/lib/mecab/dic/mecab-ko-dic" > /usr/local/etc/mecabrc'  &&     make install
+ ---> Using cache
+ ---> 278566786ec7
+Step 9/13 : RUN cd /tmp  && rm -rf mecab-ko-dic-2.1.1-20180720 && rm -f *.tar.gz  &&     git clone https://bitbucket.org/eunjeon/mecab-python-0.996.git   &&     cd mecab-python-0.996   &&     /opt/conda/envs/python3.6/bin/python setup.py build     &&     /opt/conda/envs/python3.6/bin/python setup.py install   &&     cd /tmp  && rm -rf mecab-python-0.996  && rm -f *.tar.gz
+ ---> Using cache
+ ---> 1dbc50c6daa3
+Step 10/13 : RUN cd /tmp &&     cp /usr/local/lib/python3.6/site-packages/cdsw.py  /opt/conda/envs/python3.6/lib/python3.6/site-packages/ &&     cp -r /usr/local/lib/python3.6/site-packages/cdsw-1.0.0.dist-info  /opt/conda/envs/python3.6/lib/python3.6/site-packages/ &&     /opt/conda/envs/python3.6/bin/pip install --no-cache-dir --no-clean            Cython  &&     /opt/conda/envs/python3.6/bin/pip install --no-cache-dir --no-clean  	    xgboost  gower PyKomoran pydotplus graphviz pysal tslearn folium Pillow cx_Oracle  &&     /opt/conda/envs/python3.6/bin/pip install --no-cache-dir --no-clean               pdpbox  lime  ipywidgets shap  catboost  plotly retrying
+ ---> Using cache
+ ---> 95ed50ea5af8
+Step 11/13 : RUN conda install -y -n python3.6  pandana urbanaccess  geometric  geopandas geojson shapely plotnine &&     conda install -y -n python3.6   asn1crypto                                &&     conda install -y -n python3.6   astor                                     &&     conda install -y -n python3.6   astroid                                   &&     conda install -y -n python3.6   astropy                                   &&     conda install -y -n python3.6   atomicwrites                              &&     conda install -y -n python3.6   autopep8                                  &&     conda install -y -n python3.6   argh                                      &&     conda install -y -n python3.6   azure-core                                &&     conda install -y -n python3.6   azure-storage-blob                        &&     conda install -y -n python3.6   backports                                 &&     conda install -y -n python3.6   backports.functools_lru_cache             &&     conda install -y -n python3.6   backports.shutil_get_terminal_size        &&     conda install -y -n python3.6   backports.tempfile                        &&     conda install -y -n python3.6   backports.weakref                         &&     conda install -y -n python3.6   bitarray                                  &&     conda install -y -n python3.6   bkcharts                                  &&     conda install -y -n python3.6   blas                                      &&     conda install -y -n python3.6   blaze                                     &&     conda install -y -n python3.6   blis                                      &&     conda install -y -n python3.6   blosc                                     &&     conda install -y -n python3.6   bottleneck                                &&     conda install -y -n python3.6   brotlipy                                  &&     conda install -y -n python3.6   bz2file                                   &&     conda install -y -n python3.6   ca-certificates                           &&     conda install -y -n python3.6   cairo                                     &&     conda install -y -n python3.6   catalogue                                 &&     conda install -y -n python3.6   certipy                                   &&     conda install -y -n python3.6   clyent                                    &&     conda install -y -n python3.6   colorlover                                &&     conda install -y -n python3.6   confuse                                   &&     conda install -y -n python3.6   contextlib2                               &&     conda install -y -n python3.6   convertdate                               &&     conda install -y -n python3.6   cufflinks-py                              &&     conda install -y -n python3.6   curl                                      &&     conda install -y -n python3.6   cymem                                     &&     conda install -y -n python3.6   cytoolz                                   &&     conda install -y -n python3.6   dask                                      &&     conda install -y -n python3.6   dask-core                                 &&     conda install -y -n python3.6   databricks-cli                            &&     conda install -y -n python3.6   dbus                                      &&     conda install -y -n python3.6   diff-match-patch                          &&     conda install -y -n python3.6   distributed                               &&     conda install -y -n python3.6   fastcache                                 &&     conda install -y -n python3.6   fbprophet                                 &&     conda install -y -n python3.6   filelock                                  &&     conda install -y -n python3.6   flake8                                    &&     conda install -y -n python3.6   flask                                     &&     conda install -y -n python3.6   flask-cors                                &&     conda install -y -n python3.6   Flask-SQLAlchemy                          &&     conda install -y -n python3.6   fontconfig                                &&     conda install -y -n python3.6   freetype                                  &&     conda install -y -n python3.6   fribidi                                   &&     conda install -y -n python3.6   fsspec                                    &&     conda install -y -n python3.6   funcy                                     &&     conda install -y -n python3.6   future                                    &&     conda install -y -n python3.6   gast                                      &&     conda install -y -n python3.6   get_terminal_size                         &&     conda install -y -n python3.6   gevent                                    &&     conda install -y -n python3.6   gitdb                                     &&     conda install -y -n python3.6   gitpython                                 &&     conda install -y -n python3.6   glib                                      &&     conda install -y -n python3.6   gmp                                       &&     conda install -y -n python3.6   gmpy2                                     &&     conda install -y -n python3.6   gorilla                                   &&     conda install -y -n python3.6   graphite2                                 &&     conda install -y -n python3.6   greenlet                                  &&     conda install -y -n python3.6   gst-plugins-base                          &&     conda install -y -n python3.6   gstreamer                                 &&     conda install -y -n python3.6   gunicorn                                  &&     conda install -y -n python3.6   harfbuzz                                  &&     conda install -y -n python3.6   hdf5                                      &&     conda install -y -n python3.6   heapdict                                  &&     conda install -y -n python3.6   holidays                                  &&     conda install -y -n python3.6   html5lib                                  &&     conda install -y -n python3.6   htmlmin                                   &&     conda install -y -n python3.6   icu                                       &&     conda install -y -n python3.6   imagehash                                 &&     conda install -y -n python3.6   imagesize                                 &&     conda install -y -n python3.6   imbalanced-learn                          &&     conda install -y -n python3.6   intel-openmp                              &&     conda install -y -n python3.6   intervaltree                              &&     conda install -y -n python3.6   isodate                                   &&     conda install -y -n python3.6   isort                                     &&     conda install -y -n python3.6   itsdangerous                              &&     conda install -y -n python3.6   jbig                                      &&     conda install -y -n python3.6   jdcal                                     &&     conda install -y -n python3.6   jeepney                                   &&     conda install -y -n python3.6   jpeg                                      &&     conda install -y -n python3.6   keyring                                   &&     conda install -y -n python3.6   kmodes                                    &&     conda install -y -n python3.6   lazy-object-proxy                         &&     conda install -y -n python3.6   lcms2                                     &&     conda install -y -n python3.6   libarchive                                &&     conda install -y -n python3.6   libcurl                                   &&     conda install -y -n python3.6   libedit                                   &&     conda install -y -n python3.6   libffi                                    &&     conda install -y -n python3.6   libgcc-ng                                 &&     conda install -y -n python3.6   libgfortran-ng                            &&     conda install -y -n python3.6   liblief                                   &&     conda install -y -n python3.6   libllvm9                                  &&     conda install -y -n python3.6   libpng                                    &&     conda install -y -n python3.6   libsodium                                 &&     conda install -y -n python3.6   libspatialindex                           &&     conda install -y -n python3.6   libssh2                                   &&     conda install -y -n python3.6   libstdcxx-ng                              &&     conda install -y -n python3.6   libtiff                                   &&     conda install -y -n python3.6   libtool                                   &&     conda install -y -n python3.6   libuuid                                   &&     conda install -y -n python3.6   libxcb                                    &&     conda install -y -n python3.6   libxml2                                   &&     conda install -y -n python3.6   libxslt                                   &&     conda install -y -n python3.6   locket                                    &&     conda install -y -n python3.6   lunarcalendar                             &&     conda install -y -n python3.6   lz4-c                                     &&     conda install -y -n python3.6   lzo                                       &&     conda install -y -n python3.6   Mako                                      &&     conda install -y -n python3.6   matplotlib-base                           &&     conda install -y -n python3.6   mccabe                                    &&     conda install -y -n python3.6   missingno                                 &&     conda install -y -n python3.6   mkl                                       &&     conda install -y -n python3.6   mlflow                                    &&     conda install -y -n python3.6   mlxtend                                   &&     conda install -y -n python3.6   mpc                                       &&     conda install -y -n python3.6   mpfr                                      &&     conda install -y -n python3.6   msgpack-python                            &&     conda install -y -n python3.6   msrest                                    &&     conda install -y -n python3.6   multipledispatch                          &&     conda install -y -n python3.6   murmurhash                                &&     conda install -y -n python3.6   navigator-updater                         &&     conda install -y -n python3.6   ncurses                                   &&     conda install -y -n python3.6   nose                                      &&     conda install -y -n python3.6   numpy-base                                &&     conda install -y -n python3.6   numpydoc                                  &&     conda install -y -n python3.6   odo                                       &&     conda install -y -n python3.6   openpyxl                                  &&     conda install -y -n python3.6   pamela                                    &&     conda install -y -n python3.6   pandas-profiling                          &&     conda install -y -n python3.6   pandoc                                    &&     conda install -y -n python3.6   pango                                     &&     conda install -y -n python3.6   parmap                                    &&     conda install -y -n python3.6   partd                                     &&     conda install -y -n python3.6   patchelf                                  &&     conda install -y -n python3.6   path                                      &&     conda install -y -n python3.6   path.py                                   &&     conda install -y -n python3.6   pathlib2                                  &&     conda install -y -n python3.6   pathtools                                 &&     conda install -y -n python3.6   pcre                                      &&     conda install -y -n python3.6   pdf2image                                 &&     conda install -y -n python3.6   pep8                                      &&     conda install -y -n python3.6   phik                                      &&     conda install -y -n python3.6   pixman                                    &&     conda install -y -n python3.6   pkginfo                                   &&     conda install -y -n python3.6   plac                                      &&     conda install -y -n python3.6   ply                                       &&     conda install -y -n python3.6   preshed                                   &&     conda install -y -n python3.6   prometheus_client                         &&     conda install -y -n python3.6   fbprophet                                 &&     conda install -y -n python3.6   pycaret                                   &&     conda install -y -n python3.6   pycodestyle                               &&     conda install -y -n python3.6   pycosat                                   &&     conda install -y -n python3.6   pycurl                                    &&     conda install -y -n python3.6   pydocstyle                                &&     conda install -y -n python3.6   pyflakes                                  &&     conda install -y -n python3.6   pyldavis                                  &&     conda install -y -n python3.6   py-lief                                   &&     conda install -y -n python3.6   pylint                                    &&     conda install -y -n python3.6   pymeeus                                   &&     conda install -y -n python3.6   pyod                                      &&     conda install -y -n python3.6   pyqt                                      &&     conda install -y -n python3.6   PyQt5-sip                                 &&     conda install -y -n python3.6   pystan                                    &&     conda install -y -n python3.6   pytables                                  &&     conda install -y -n python3.6   pytesseract                               &&     conda install -y -n python3.6   pytest-astropy                            &&     conda install -y -n python3.6   pytest-doctestplus                        &&     conda install -y -n python3.6   pytest-openfiles                          &&     conda install -y -n python3.6   pytest-remotedata                         &&     conda install -y -n python3.6   pytest-runner                             &&     conda install -y -n python3.6   python-bidi                               &&     conda install -y -n python3.6   python-dateutil                           &&     conda install -y -n python3.6   python-editor                             &&     conda install -y -n python3.6   python-graphviz                           &&     conda install -y -n python3.6   python-json-logger                        &&     conda install -y -n python3.6   python-jsonrpc-server                     &&     conda install -y -n python3.6   python-language-server                    &&     conda install -y -n python3.6   python-libarchive-c                       &&     conda install -y -n python3.6   python-oauth2                             &&     conda install -y -n python3.6   pyxdg                                     &&     conda install -y -n python3.6   qtconsole                                 &&     conda install -y -n python3.6   qtpy                                      &&     conda install -y -n python3.6   readline                                  &&     conda install -y -n python3.6   livereload                                &&     conda install -y -n python3.6   ripgrep                                   &&     conda install -y -n python3.6   rope                                      &&     conda install -y -n python3.6   scikit-plot                               &&     conda install -y -n python3.6   sentencepiece                             &&     conda install -y -n python3.6   setuptools-git                            &&     conda install -y -n python3.6   setuptools-scm                            &&     conda install -y -n python3.6   simplegeneric                             &&     conda install -y -n python3.6   singledispatch                            &&     conda install -y -n python3.6   sip                                       &&     conda install -y -n python3.6   scikit-learn                              &&     conda install -y -n python3.6   sphinx                                    &&     conda install -y -n python3.6   sphinxcontrib                             &&     conda install -y -n python3.6   sphinxcontrib-applehelp                   &&     conda install -y -n python3.6   sphinxcontrib-devhelp                     &&     conda install -y -n python3.6   sphinxcontrib-jsmath                      &&     conda install -y -n python3.6   sphinxcontrib-qthelp                      &&     conda install -y -n python3.6   sphinxcontrib-serializinghtml             &&     conda install -y -n python3.6   sphinxcontrib-websupport                  &&     conda install -y -n python3.6   spyder                                    &&     conda install -y -n python3.6   spyder-kernels                            &&     conda install -y -n python3.6   sqlalchemy                                &&     conda install -y -n python3.6   sqlite                                    &&     conda install -y -n python3.6   sqlparse                                  &&     conda install -y -n python3.6   srsly                                     &&     conda install -y -n python3.6   tablib                                    &&     conda install -y -n python3.6   tabulate                                  &&     conda install -y -n python3.6   tangled-up-in-unicode                     &&     conda install -y -n python3.6   tbb                                       &&     conda install -y -n python3.6   tblib                                     &&     conda install -y -n python3.6   tesseract                                 &&     conda install -y -n python3.6   textblob                                  &&     conda install -y -n python3.6   thinc                                     &&     conda install -y -n python3.6   time                                      &&     conda install -y -n python3.6   tk                                        &&     conda install -y -n python3.6   toolz                                     &&     conda install -y -n python3.6   typing                                    &&     conda install -y -n python3.6   ujson                                     &&     conda install -y -n python3.6   umap-learn                                &&     conda install -y -n python3.6   unicodecsv                                &&     conda install -y -n python3.6   unixodbc                                  &&     conda install -y -n python3.6   visions                                   &&     conda install -y -n python3.6   wasabi                                    &&     conda install -y -n python3.6   watchdog                                  &&     conda install -y -n python3.6   websocket-client                          &&     conda install -y -n python3.6   wordcloud                                 &&     conda install -y -n python3.6   wurlitzer                                 &&     conda install -y -n python3.6   xlrd                                      &&     conda install -y -n python3.6   xlsxwriter                                &&     conda install -y -n python3.6   xlwt                                      &&     conda install -y -n python3.6   xmltodict                                 &&     conda install -y -n python3.6   xz                                        &&     conda install -y -n python3.6   yaml                                      &&     conda install -y -n python3.6   yapf                                      &&     conda install -y -n python3.6   yellowbrick                               &&     conda install -y -n python3.6   zeromq                                    &&     conda install -y -n python3.6   zict                                      &&     conda install -y -n python3.6   zlib                                      &&     conda install -y -n python3.6   zope                                      &&     conda install -y -n python3.6   zope.event                                &&     conda install -y -n python3.6   zope.interface                            &&     conda install -y -n python3.6   zstd                                      &&     conda clean -a
+ ---> Using cache
+ ---> 93fbae469b09
+Step 12/13 : RUN conda install -y -n python3.6 tokenizers &&     conda install -y -n python3.6 -c sas-institute swat &&     conda install -y -n python3.6 schedule &&     conda install -y -n python3.6 selenium &&     conda clean -a
+ ---> Using cache
+ ---> 2a1d1af8c9be
+Step 13/13 : RUN conda install -y -n python3.6 pycodestyle==2.6.0 &&     conda install -y -n python3.6 pyflakes==2.4.0 &&     conda install -y -n python3.6 cmdstanpy==0.9.5 &&     conda install -y -n python3.6 mlflow &&     conda clean -a
+ ---> Running in ae6149383493
+Collecting package metadata (current_repodata.json): ...working... done
+Solving environment: ...working... 
+The environment is inconsistent, please check the package plan carefully
+The following packages are causing the inconsistency:
+
+  - conda-forge/linux-64::spacy==2.2.2=py36hc9558a2_0
+  - conda-forge/noarch::geometric==0.9.7.2=py_0
+  - conda-forge/linux-64::libblas==3.9.0=8_openblas
+  - conda-forge/linux-64::scipy==1.5.3=py36h976291a_0
+  - defaults/noarch::dask==1.2.2=py_0
+  - conda-forge/noarch::python-cufflinks==0.17.3=py_0
+  - defaults/linux-64::odo==0.5.1=py36_0
+  - defaults/linux-64::blaze==0.11.3=py36_0
+  - sas-institute/linux-64::swat==1.9.3=py36_0
+  - conda-forge/linux-64::pandas==1.1.5=py36h284efc9_0
+  - conda-forge/linux-64::lightfm==1.16=py36h92226af_2
+  - conda-forge/noarch::imbalanced-learn==0.7.0=py_1
+  - defaults/noarch::descartes==1.1.0=pyhd3eb1b0_4
+  - defaults/linux-64::libgfortran-ng==7.5.0=ha8ba4b0_17
+  - defaults/noarch::seaborn==0.11.2=pyhd3eb1b0_0
+  - conda-forge/linux-64::umap-learn==0.5.1=py36h5fab9bb_1
+  - conda-forge/linux-64::wordcloud==1.8.1=py36h8f6f2f9_1
+  - conda-forge/noarch::yellowbrick==1.3.post1=pyhd8ed1ab_2
+  - defaults/linux-64::matplotlib-base==3.2.2=py36hef1b27d_0
+  - conda-forge/linux-64::numpy==1.19.5=py36hfc0c790_2
+  - conda-forge/linux-64::pandana==0.6.1=py36h84e8a9e_0
+  - defaults/noarch::visions==0.5.0=pyhd3eb1b0_0
+  - defaults/linux-64::bottleneck==1.3.2=py36heb32a55_1
+  - defaults/linux-64::numpy-base==1.18.5=py36h2f8d375_0
+  - conda-forge/linux-64::fbprophet==0.7.1=py36h831f99a_0
+  - conda-forge/noarch::pyod==0.9.5=pyhd8ed1ab_0
+  - conda-forge/linux-64::numexpr==2.7.3=py36h284efc9_0
+  - defaults/noarch::geopandas==0.9.0=py_1
+  - conda-forge/linux-64::matplotlib==3.2.2=1
+  - defaults/linux-64::lightgbm==3.2.1=py36h295c915_0
+  - conda-forge/noarch::urbanaccess==0.2.2=pyhd3deb0d_0
+  - conda-forge/noarch::mizani==0.7.3=pyhd8ed1ab_0
+  - defaults/linux-64::numba==0.53.1=py36ha9443f7_0
+  - conda-forge/noarch::mlxtend==0.19.0=pyhd8ed1ab_0
+  - conda-forge/linux-64::pytables==3.6.1=py36hb7ec5aa_3
+  - conda-forge/noarch::pyldavis==3.2.2=pyhd8ed1ab_0
+  - defaults/linux-64::shapely==1.7.1=py36h1728cc4_0
+  - defaults/linux-64::bokeh==0.13.0=py36_0
+  - defaults/linux-64::gdal==3.0.2=py36h4694593_1
+  - conda-forge/noarch::osmnet==0.1.6=py_0
+  - defaults/noarch::pytest-astropy==0.8.0=pyhd3eb1b0_1
+  - defaults/noarch::missingno==0.4.2=pyhd3eb1b0_1
+  - conda-forge/noarch::plotnine==0.8.0=pyhd8ed1ab_0
+  - conda-forge/noarch::tablib==3.1.0=pyhd8ed1ab_0
+  - defaults/noarch::mapclassify==2.4.3=pyhd3eb1b0_0
+  - conda-forge/noarch::patsy==0.5.2=pyhd8ed1ab_0
+  - defaults/linux-64::bkcharts==0.2=py36_0
+  - conda-forge/noarch::pycaret==2.3.5=pyhd8ed1ab_0
+  - defaults/noarch::geopandas-base==0.9.0=py_1
+  - conda-forge/noarch::cufflinks-py==0.17.3=py_0
+  - defaults/noarch::pynndescent==0.5.4=pyhd3eb1b0_0
+  - defaults/linux-64::cython-blis==0.4.1=py36h7b6447c_1
+  - defaults/linux-64::h5py==2.10.0=py36hd6299e0_1
+  - defaults/linux-64::cfitsio==3.470=hf0d0db6_6
+  - defaults/linux-64::fiona==1.8.13.post1=py36hc820daa_0
+  - conda-forge/linux-64::libcblas==3.9.0=8_openblas
+  - conda-forge/noarch::boruta_py==0.3=py_0
+  - defaults/linux-64::scikit-learn==0.23.2=py36h0573a6f_0
+  - conda-forge/linux-64::astropy==3.2.3=py36h516909a_0
+  - defaults/noarch::phik==0.11.2=pyhd3eb1b0_0
+  - defaults/linux-64::pytest-arraydiff==0.3=py36h39e3cac_0
+  - defaults/linux-64::kealib==1.4.14=h54c064f_0
+  - defaults/linux-64::gensim==3.8.3=py36h2531618_2
+  - defaults/linux-64::datashape==0.5.4=py36h06a4308_1
+  - defaults/noarch::pandas-profiling==2.9.0=pyhd3eb1b0_0
+  - defaults/linux-64::pytest-doctestplus==0.3.0=py36_0
+  - conda-forge/noarch::scikit-plot==0.3.7=py_1
+  - conda-forge/noarch::mlflow==1.2.0=py_1
+  - defaults/linux-64::libnetcdf==4.6.1=h2053bdc_4
+  - defaults/linux-64::statsmodels==0.12.2=py36h27cfd23_0
+  - defaults/linux-64::libgdal==3.0.2=h7c14f60_1
+  - conda-forge/linux-64::liblapack==3.9.0=8_openblas
+  - defaults/linux-64::pystan==2.17.1.0=py36h04863e7_0
+  - defaults/noarch::imagehash==4.2.1=pyhd3eb1b0_0
+  - defaults/linux-64::pywavelets==1.1.1=py36h7b6447c_2
+  - conda-forge/noarch::kmodes==0.11.0=pyh44b312d_1
+  - conda-forge/linux-64::thinc==7.3.0=py36hc9558a2_0
+  - conda-forge/linux-64::libopenblas==0.3.12=pthreads_hb3c22a3_1
+  - defaults/linux-64::hdf5==1.10.6=hb1b8bf9_0
+done
+[91m
+
+==> WARNING: A newer version of conda exists. <==
+  current version: 4.8.3
+  latest version: 4.11.0
+
+Please update conda by running
+
+    $ conda update -n base -c defaults conda
+
+
+[0m
+# All requested packages already installed.
+
+Collecting package metadata (current_repodata.json): ...working... done
+Solving environment: ...working... 
+The environment is inconsistent, please check the package plan carefully
+The following packages are causing the inconsistency:
+
+  - conda-forge/linux-64::spacy==2.2.2=py36hc9558a2_0
+  - conda-forge/noarch::geometric==0.9.7.2=py_0
+  - conda-forge/linux-64::libblas==3.9.0=8_openblas
+  - conda-forge/linux-64::scipy==1.5.3=py36h976291a_0
+  - defaults/noarch::dask==1.2.2=py_0
+  - conda-forge/noarch::python-cufflinks==0.17.3=py_0
+  - defaults/linux-64::odo==0.5.1=py36_0
+  - defaults/linux-64::blaze==0.11.3=py36_0
+  - sas-institute/linux-64::swat==1.9.3=py36_0
+  - conda-forge/linux-64::pandas==1.1.5=py36h284efc9_0
+  - conda-forge/linux-64::lightfm==1.16=py36h92226af_2
+  - conda-forge/noarch::imbalanced-learn==0.7.0=py_1
+  - defaults/noarch::descartes==1.1.0=pyhd3eb1b0_4
+  - defaults/linux-64::libgfortran-ng==7.5.0=ha8ba4b0_17
+  - defaults/noarch::seaborn==0.11.2=pyhd3eb1b0_0
+  - conda-forge/linux-64::umap-learn==0.5.1=py36h5fab9bb_1
+  - conda-forge/linux-64::wordcloud==1.8.1=py36h8f6f2f9_1
+  - conda-forge/noarch::yellowbrick==1.3.post1=pyhd8ed1ab_2
+  - defaults/linux-64::matplotlib-base==3.2.2=py36hef1b27d_0
+  - conda-forge/linux-64::numpy==1.19.5=py36hfc0c790_2
+  - conda-forge/linux-64::pandana==0.6.1=py36h84e8a9e_0
+  - defaults/noarch::visions==0.5.0=pyhd3eb1b0_0
+  - defaults/linux-64::bottleneck==1.3.2=py36heb32a55_1
+  - defaults/linux-64::numpy-base==1.18.5=py36h2f8d375_0
+  - conda-forge/linux-64::fbprophet==0.7.1=py36h831f99a_0
+  - conda-forge/noarch::pyod==0.9.5=pyhd8ed1ab_0
+  - conda-forge/linux-64::numexpr==2.7.3=py36h284efc9_0
+  - defaults/noarch::geopandas==0.9.0=py_1
+  - conda-forge/linux-64::matplotlib==3.2.2=1
+  - defaults/linux-64::lightgbm==3.2.1=py36h295c915_0
+  - conda-forge/noarch::urbanaccess==0.2.2=pyhd3deb0d_0
+  - conda-forge/noarch::mizani==0.7.3=pyhd8ed1ab_0
+  - defaults/linux-64::numba==0.53.1=py36ha9443f7_0
+  - conda-forge/noarch::mlxtend==0.19.0=pyhd8ed1ab_0
+  - conda-forge/linux-64::pytables==3.6.1=py36hb7ec5aa_3
+  - conda-forge/noarch::pyldavis==3.2.2=pyhd8ed1ab_0
+  - defaults/linux-64::shapely==1.7.1=py36h1728cc4_0
+  - defaults/linux-64::bokeh==0.13.0=py36_0
+  - defaults/linux-64::gdal==3.0.2=py36h4694593_1
+  - conda-forge/noarch::osmnet==0.1.6=py_0
+  - defaults/noarch::pytest-astropy==0.8.0=pyhd3eb1b0_1
+  - defaults/noarch::missingno==0.4.2=pyhd3eb1b0_1
+  - conda-forge/noarch::plotnine==0.8.0=pyhd8ed1ab_0
+  - conda-forge/noarch::tablib==3.1.0=pyhd8ed1ab_0
+  - defaults/noarch::mapclassify==2.4.3=pyhd3eb1b0_0
+  - conda-forge/noarch::patsy==0.5.2=pyhd8ed1ab_0
+  - defaults/linux-64::bkcharts==0.2=py36_0
+  - conda-forge/noarch::pycaret==2.3.5=pyhd8ed1ab_0
+  - defaults/noarch::geopandas-base==0.9.0=py_1
+  - conda-forge/noarch::cufflinks-py==0.17.3=py_0
+  - defaults/noarch::pynndescent==0.5.4=pyhd3eb1b0_0
+  - defaults/linux-64::cython-blis==0.4.1=py36h7b6447c_1
+  - defaults/linux-64::h5py==2.10.0=py36hd6299e0_1
+  - defaults/linux-64::cfitsio==3.470=hf0d0db6_6
+  - defaults/linux-64::fiona==1.8.13.post1=py36hc820daa_0
+  - conda-forge/linux-64::libcblas==3.9.0=8_openblas
+  - conda-forge/noarch::boruta_py==0.3=py_0
+  - defaults/linux-64::scikit-learn==0.23.2=py36h0573a6f_0
+  - conda-forge/linux-64::astropy==3.2.3=py36h516909a_0
+  - defaults/noarch::phik==0.11.2=pyhd3eb1b0_0
+  - defaults/linux-64::pytest-arraydiff==0.3=py36h39e3cac_0
+  - defaults/linux-64::kealib==1.4.14=h54c064f_0
+  - defaults/linux-64::gensim==3.8.3=py36h2531618_2
+  - defaults/linux-64::datashape==0.5.4=py36h06a4308_1
+  - defaults/noarch::pandas-profiling==2.9.0=pyhd3eb1b0_0
+  - defaults/linux-64::pytest-doctestplus==0.3.0=py36_0
+  - conda-forge/noarch::scikit-plot==0.3.7=py_1
+  - conda-forge/noarch::mlflow==1.2.0=py_1
+  - defaults/linux-64::libnetcdf==4.6.1=h2053bdc_4
+  - defaults/linux-64::statsmodels==0.12.2=py36h27cfd23_0
+  - defaults/linux-64::libgdal==3.0.2=h7c14f60_1
+  - conda-forge/linux-64::liblapack==3.9.0=8_openblas
+  - defaults/linux-64::pystan==2.17.1.0=py36h04863e7_0
+  - defaults/noarch::imagehash==4.2.1=pyhd3eb1b0_0
+  - defaults/linux-64::pywavelets==1.1.1=py36h7b6447c_2
+  - conda-forge/noarch::kmodes==0.11.0=pyh44b312d_1
+  - conda-forge/linux-64::thinc==7.3.0=py36hc9558a2_0
+  - conda-forge/linux-64::libopenblas==0.3.12=pthreads_hb3c22a3_1
+  - defaults/linux-64::hdf5==1.10.6=hb1b8bf9_0
+failed with initial frozen solve. Retrying with flexible solve.
+Solving environment: ...working... failed with repodata from current_repodata.json, will retry with next repodata source.
+Collecting package metadata (repodata.json): ...working... done
+Solving environment: ...working... 
+The environment is inconsistent, please check the package plan carefully
+The following packages are causing the inconsistency:
+
+  - conda-forge/linux-64::spacy==2.2.2=py36hc9558a2_0
+  - conda-forge/noarch::geometric==0.9.7.2=py_0
+  - conda-forge/linux-64::libblas==3.9.0=8_openblas
+  - conda-forge/linux-64::scipy==1.5.3=py36h976291a_0
+  - defaults/noarch::dask==1.2.2=py_0
+  - conda-forge/noarch::python-cufflinks==0.17.3=py_0
+  - defaults/linux-64::odo==0.5.1=py36_0
+  - defaults/linux-64::blaze==0.11.3=py36_0
+  - sas-institute/linux-64::swat==1.9.3=py36_0
+  - conda-forge/linux-64::pandas==1.1.5=py36h284efc9_0
+  - conda-forge/linux-64::lightfm==1.16=py36h92226af_2
+  - conda-forge/noarch::imbalanced-learn==0.7.0=py_1
+  - defaults/noarch::descartes==1.1.0=pyhd3eb1b0_4
+  - defaults/linux-64::libgfortran-ng==7.5.0=ha8ba4b0_17
+  - defaults/noarch::seaborn==0.11.2=pyhd3eb1b0_0
+  - conda-forge/linux-64::umap-learn==0.5.1=py36h5fab9bb_1
+  - conda-forge/linux-64::wordcloud==1.8.1=py36h8f6f2f9_1
+  - conda-forge/noarch::yellowbrick==1.3.post1=pyhd8ed1ab_2
+  - defaults/linux-64::matplotlib-base==3.2.2=py36hef1b27d_0
+  - conda-forge/linux-64::numpy==1.19.5=py36hfc0c790_2
+  - conda-forge/linux-64::pandana==0.6.1=py36h84e8a9e_0
+  - defaults/noarch::visions==0.5.0=pyhd3eb1b0_0
+  - defaults/linux-64::bottleneck==1.3.2=py36heb32a55_1
+  - defaults/linux-64::numpy-base==1.18.5=py36h2f8d375_0
+  - conda-forge/linux-64::fbprophet==0.7.1=py36h831f99a_0
+  - conda-forge/noarch::pyod==0.9.5=pyhd8ed1ab_0
+  - conda-forge/linux-64::numexpr==2.7.3=py36h284efc9_0
+  - defaults/noarch::geopandas==0.9.0=py_1
+  - conda-forge/linux-64::matplotlib==3.2.2=1
+  - defaults/linux-64::lightgbm==3.2.1=py36h295c915_0
+  - conda-forge/noarch::urbanaccess==0.2.2=pyhd3deb0d_0
+  - conda-forge/noarch::mizani==0.7.3=pyhd8ed1ab_0
+  - defaults/linux-64::numba==0.53.1=py36ha9443f7_0
+  - conda-forge/noarch::mlxtend==0.19.0=pyhd8ed1ab_0
+  - conda-forge/linux-64::pytables==3.6.1=py36hb7ec5aa_3
+  - conda-forge/noarch::pyldavis==3.2.2=pyhd8ed1ab_0
+  - defaults/linux-64::shapely==1.7.1=py36h1728cc4_0
+  - defaults/linux-64::bokeh==0.13.0=py36_0
+  - defaults/linux-64::gdal==3.0.2=py36h4694593_1
+  - conda-forge/noarch::osmnet==0.1.6=py_0
+  - defaults/noarch::pytest-astropy==0.8.0=pyhd3eb1b0_1
+  - defaults/noarch::missingno==0.4.2=pyhd3eb1b0_1
+  - conda-forge/noarch::plotnine==0.8.0=pyhd8ed1ab_0
+  - conda-forge/noarch::tablib==3.1.0=pyhd8ed1ab_0
+  - defaults/noarch::mapclassify==2.4.3=pyhd3eb1b0_0
+  - conda-forge/noarch::patsy==0.5.2=pyhd8ed1ab_0
+  - defaults/linux-64::bkcharts==0.2=py36_0
+  - conda-forge/noarch::pycaret==2.3.5=pyhd8ed1ab_0
+  - defaults/noarch::geopandas-base==0.9.0=py_1
+  - conda-forge/noarch::cufflinks-py==0.17.3=py_0
+  - defaults/noarch::pynndescent==0.5.4=pyhd3eb1b0_0
+  - defaults/linux-64::cython-blis==0.4.1=py36h7b6447c_1
+  - defaults/linux-64::h5py==2.10.0=py36hd6299e0_1
+  - defaults/linux-64::cfitsio==3.470=hf0d0db6_6
+  - defaults/linux-64::fiona==1.8.13.post1=py36hc820daa_0
+  - conda-forge/linux-64::libcblas==3.9.0=8_openblas
+  - conda-forge/noarch::boruta_py==0.3=py_0
+  - defaults/linux-64::scikit-learn==0.23.2=py36h0573a6f_0
+  - conda-forge/linux-64::astropy==3.2.3=py36h516909a_0
+  - defaults/noarch::phik==0.11.2=pyhd3eb1b0_0
+  - defaults/linux-64::pytest-arraydiff==0.3=py36h39e3cac_0
+  - defaults/linux-64::kealib==1.4.14=h54c064f_0
+  - defaults/linux-64::gensim==3.8.3=py36h2531618_2
+  - defaults/linux-64::datashape==0.5.4=py36h06a4308_1
+  - defaults/noarch::pandas-profiling==2.9.0=pyhd3eb1b0_0
+  - defaults/linux-64::pytest-doctestplus==0.3.0=py36_0
+  - conda-forge/noarch::scikit-plot==0.3.7=py_1
+  - conda-forge/noarch::mlflow==1.2.0=py_1
+  - defaults/linux-64::libnetcdf==4.6.1=h2053bdc_4
+  - defaults/linux-64::statsmodels==0.12.2=py36h27cfd23_0
+  - defaults/linux-64::libgdal==3.0.2=h7c14f60_1
+  - conda-forge/linux-64::liblapack==3.9.0=8_openblas
+  - defaults/linux-64::pystan==2.17.1.0=py36h04863e7_0
+  - defaults/noarch::imagehash==4.2.1=pyhd3eb1b0_0
+  - defaults/linux-64::pywavelets==1.1.1=py36h7b6447c_2
+  - conda-forge/noarch::kmodes==0.11.0=pyh44b312d_1
+  - conda-forge/linux-64::thinc==7.3.0=py36hc9558a2_0
+  - conda-forge/linux-64::libopenblas==0.3.12=pthreads_hb3c22a3_1
+  - defaults/linux-64::hdf5==1.10.6=hb1b8bf9_0
+failed with initial frozen solve. Retrying with flexible solve.
+Solving environment: ...working... done
+[91m
+
+==> WARNING: A newer version of conda exists. <==
+  current version: 4.8.3
+  latest version: 4.11.0
+
+Please update conda by running
+
+    $ conda update -n base -c defaults conda
+
+
+[0m
+## Package Plan ##
+
+  environment location: /opt/conda/envs/python3.6
+
+  added / updated specs:
+    - pyflakes==2.4.0
+
+
+The following packages will be downloaded:
+
+    package                    |            build
+    ---------------------------|-----------------
+    blas-2.14                  |         openblas          10 KB  conda-forge
+    flake8-4.0.1               |     pyhd8ed1ab_0          83 KB  conda-forge
+    json-rpc-1.12.2            |             py_0          29 KB  conda-forge
+    libblas-3.8.0              |      14_openblas          10 KB  conda-forge
+    libcblas-3.8.0             |      14_openblas          10 KB  conda-forge
+    liblapack-3.8.0            |      14_openblas          10 KB  conda-forge
+    liblapacke-3.8.0           |      14_openblas          10 KB  conda-forge
+    libopenblas-0.3.7          |       h5ec1e0e_6         7.6 MB  conda-forge
+    mpich-3.3.2                |       hc856adb_0         3.8 MB  defaults
+    pycodestyle-2.8.0          |     pyhd3eb1b0_0          41 KB  defaults
+    pyflakes-2.4.0             |     pyhd3eb1b0_0          60 KB  defaults
+    pyls-spyder-0.2.1          |     pyhd3eb1b0_0          11 KB  defaults
+    python-language-server-0.11.1|           py36_0          50 KB  conda-forge
+    spyder-3.2.8               |           py36_0         2.1 MB  defaults
+    ------------------------------------------------------------
+                                           Total:        13.9 MB
+
+The following NEW packages will be INSTALLED:
+
+  json-rpc           conda-forge/noarch::json-rpc-1.12.2-py_0
+  liblapacke         conda-forge/linux-64::liblapacke-3.8.0-14_openblas
+
+The following packages will be UPDATED:
+
+  blas                         pkgs/main::blas-1.0-openblas --> conda-forge::blas-2.14-openblas
+  flake8               pkgs/main::flake8-3.9.0-pyhd3eb1b0_0 --> conda-forge::flake8-4.0.1-pyhd8ed1ab_0
+  pycodestyle                            2.6.0-pyhd3eb1b0_0 --> 2.8.0-pyhd3eb1b0_0
+  pyflakes                               2.2.0-pyhd3eb1b0_0 --> 2.4.0-pyhd3eb1b0_0
+
+The following packages will be SUPERSEDED by a higher-priority channel:
+
+  python-language-s~ pkgs/main/noarch::python-language-ser~ --> conda-forge/linux-64::python-language-server-0.11.1-py36_0
+
+The following packages will be DOWNGRADED:
+
+  libblas                                  3.9.0-8_openblas --> 3.8.0-14_openblas
+  libcblas                                 3.9.0-8_openblas --> 3.8.0-14_openblas
+  liblapack                                3.9.0-8_openblas --> 3.8.0-14_openblas
+  libopenblas                    0.3.12-pthreads_hb3c22a3_1 --> 0.3.7-h5ec1e0e_6
+  mpich                                    3.3.2-external_0 --> 3.3.2-hc856adb_0
+  pyls-spyder                            0.3.2-pyhd3eb1b0_0 --> 0.2.1-pyhd3eb1b0_0
+  spyder                               5.0.5-py36h06a4308_2 --> 3.2.8-py36_0
+
+
+
+Downloading and Extracting Packages
+mpich-3.3.2          | 3.8 MB    |            |   0% mpich-3.3.2          | 3.8 MB    |            |   0% mpich-3.3.2          | 3.8 MB    | ###3       |  33% mpich-3.3.2          | 3.8 MB    | ######2    |  63% mpich-3.3.2          | 3.8 MB    | #########1 |  92% mpich-3.3.2          | 3.8 MB    | ########## | 100% 
+flake8-4.0.1         | 83 KB     |            |   0% flake8-4.0.1         | 83 KB     | #9         |  19% flake8-4.0.1         | 83 KB     | ########## | 100% 
+pyflakes-2.4.0       | 60 KB     |            |   0% pyflakes-2.4.0       | 60 KB     | ########## | 100% 
+pyls-spyder-0.2.1    | 11 KB     |            |   0% pyls-spyder-0.2.1    | 11 KB     | ########## | 100% 
+liblapack-3.8.0      | 10 KB     |            |   0% liblapack-3.8.0      | 10 KB     | ########## | 100% 
+python-language-serv | 50 KB     |            |   0% python-language-serv | 50 KB     | ###1       |  32% python-language-serv | 50 KB     | ########## | 100% 
+libopenblas-0.3.7    | 7.6 MB    |            |   0% libopenblas-0.3.7    | 7.6 MB    | #          |  11% libopenblas-0.3.7    | 7.6 MB    | ##5        |  26% libopenblas-0.3.7    | 7.6 MB    | ####       |  41% libopenblas-0.3.7    | 7.6 MB    | #####5     |  56% libopenblas-0.3.7    | 7.6 MB    | #######    |  71% libopenblas-0.3.7    | 7.6 MB    | ########5  |  85% libopenblas-0.3.7    | 7.6 MB    | ########## | 100% 
+json-rpc-1.12.2      | 29 KB     |            |   0% json-rpc-1.12.2      | 29 KB     | #####4     |  54% json-rpc-1.12.2      | 29 KB     | ########## | 100% 
+libblas-3.8.0        | 10 KB     |            |   0% libblas-3.8.0        | 10 KB     | ########## | 100% 
+libcblas-3.8.0       | 10 KB     |            |   0% libcblas-3.8.0       | 10 KB     | ########## | 100% 
+pycodestyle-2.8.0    | 41 KB     |            |   0% pycodestyle-2.8.0    | 41 KB     | ###9       |  39% pycodestyle-2.8.0    | 41 KB     | ########## | 100% 
+spyder-3.2.8         | 2.1 MB    |            |   0% spyder-3.2.8         | 2.1 MB    | ####2      |  43% spyder-3.2.8         | 2.1 MB    | #########7 |  97% spyder-3.2.8         | 2.1 MB    | ########## | 100% 
+blas-2.14            | 10 KB     |            |   0% blas-2.14            | 10 KB     | ########## | 100% 
+liblapacke-3.8.0     | 10 KB     |            |   0% liblapacke-3.8.0     | 10 KB     | ########## | 100% 
+Preparing transaction: ...working... done
+Verifying transaction: ...working... done
+Executing transaction: ...working... done
+Collecting package metadata (current_repodata.json): ...working... done
+Solving environment: ...working... failed with initial frozen solve. Retrying with flexible solve.
+Collecting package metadata (repodata.json): ...working... done
+Solving environment: ...working... failed with initial frozen solve. Retrying with flexible solve.
+[91m
+PackagesNotFoundError: The following packages are not available from current channels:
+
+  - cmdstanpy==0.9.5
+
+Current channels:
+
+  - https://repo.anaconda.com/pkgs/main/linux-64
+  - https://repo.anaconda.com/pkgs/main/noarch
+  - https://repo.anaconda.com/pkgs/r/linux-64
+  - https://repo.anaconda.com/pkgs/r/noarch
+  - https://conda.anaconda.org/conda-forge/linux-64
+  - https://conda.anaconda.org/conda-forge/noarch
+  - https://conda.anaconda.org/cloudera/linux-64
+  - https://conda.anaconda.org/cloudera/noarch
+  - https://conda.anaconda.org/apache/linux-64
+  - https://conda.anaconda.org/apache/noarch
+  - https://conda.anaconda.org/anaconda-cluster/linux-64
+  - https://conda.anaconda.org/anaconda-cluster/noarch
+
+To search for alternate channels that may provide the conda package you're
+looking for, navigate to
+
+    https://anaconda.org
+
+and use the search bar at the top of the page.
+
+
+[0mThe command '/bin/sh -c conda install -y -n python3.6 pycodestyle==2.6.0 &&     conda install -y -n python3.6 pyflakes==2.4.0 &&     conda install -y -n python3.6 cmdstanpy==0.9.5 &&     conda install -y -n python3.6 mlflow &&     conda clean -a' returned a non-zero code: 1
+####end  sh 02_make.sh     "07:07:29" ####
+SITE_DOMAIN=lgu.com
+####start  sh 03_01_make.sh     "07:07:29" ####
+Sending build context to Docker daemon 35.12 GB
+Step 1/2 : FROM conda.docker.repository.cloudera.com/cdsw/engine:13
+ ---> 2a1d1af8c9be
+Step 2/2 : RUN /opt/conda/envs/python3.6/bin/pip install --no-cache-dir --no-clean -v netifaces         tensorflow-gpu==2.4
+ ---> Using cache
+ ---> 31e57e8663ff
+Successfully built 31e57e8663ff
+####end  sh 03_01_make.sh     "07:28:00" ####
+SITE_DOMAIN=lgu.com
+TODAY :   20211210 
+####start  sh save_docker.sh     "07:28:00" ####
+####end  sh save_docker.sh     "08:38:46" ####
